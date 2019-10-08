@@ -2,7 +2,7 @@ var funcForGenearateString = require("randomstring");
 var axios = require('axios');
 var print = require("./second");
 
-print.main();
+//print.main();
 
 var name = funcForGenearateString.generate({
   length: 12,
@@ -46,22 +46,35 @@ async function sum(){
 async function getQuestions() {
   try {
     const response = await axios.get("https://opentdb.com/api.php?amount=10");
-    console.log(response.data);
+    //console.log(response);
 
-    var questionsList = response.data.results.map((obj) => {
+    var questionsList = response.data.results.map(function(obj) {
       return { 
-        question: obj.question,
-         category: obj.category
+         question: obj.question,
+         category: obj.category,
+         difficulty: Math.floor(Math.random() * 5) + 1
         };
     });
+ 
+    //console.log(questionsList)
 
-    console.log(questionsList);
+    var average = questionsList.reduce((total, currentObj, index, array) => {
+     total = total + currentObj.difficulty;
+     if(index == array.length - 1) {
+       return total/array.length;
+     }
+     else {
+       return total;
+     }
+    }, 0);
+    
+    console.log(average);
   } catch (error) {
     console.error(error);
   }
 }
 
-//getQuestions();
+getQuestions();
 
 async function postMail() {
   try {
