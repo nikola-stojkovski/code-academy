@@ -6,9 +6,13 @@ require('dotenv/config');
 
 const app = express();
 
+app.use((req, res, next) => {
+    console.log(`Logged ${req.url} - ${req.method} --- ${new Date()}`);
+    next();
+});
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 
 app.get('/read', (req, res) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'data.json'));
@@ -69,6 +73,29 @@ app.patch('/users/:id', (req, res) => {
 
 app.delete('/users/:id', (req, res) => {
     res.send("Delete user with id = " + req.params.id);
+});
+
+// // user.id = updUser.id ? updUser.id : user.id;
+
+// // if (updUser.id) {
+// //     user.id = updUser.id
+// // }
+
+app.use((req, res, next) => {
+    var error = new Error("Not found. Please try with another route!");
+    error.status = 404;
+    next(error);
+});
+
+app.use((err, req, res, next) => {
+    var errorObj = {
+        status: err.status,
+        error: {
+            message: err.message
+        }
+    };
+
+    res.status(err.status).json(errorObj);
 });
 
 var port = process.env.PORT || 8080;
