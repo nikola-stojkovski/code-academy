@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const users = require('./users/routes');
 require('dotenv/config');
 
 const app = express();
@@ -13,6 +14,8 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use('/users', users);
 
 app.get('/read', (req, res) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'data.json'));
@@ -34,16 +37,15 @@ app.get('/write', (req, res) => {
     res.status(201).send(newStudent);
 });
 
-app.get('/users', (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
-    res.status(200).send(users); 
-});
-
-app.get('/users/:id', (req, res) => {
+app.get('/users/:id', (req, res, next) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
     let users = JSON.parse(rawdata);
 
+    if (req.params.id == 0) {
+        var error = new Error("Id can not be 0!");
+        error.status = 401;
+        next(error);
+    }
     let currentUser = users.filter((x) => {
         return x.id == req.params.id;
     });
