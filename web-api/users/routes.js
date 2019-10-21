@@ -1,13 +1,22 @@
 var express = require('express');
-const fs = require('fs');
-const path = require('path');
+const actions = require('./actions');
 
 var routes = express.Router();
 
-routes.get('/', (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
-    res.status(200).send(users);    
+routes.get('/', actions.getAllUsers);
+routes.get('/:id', actions.getSpecificUser);
+routes.post('/', actions.createUser);
+
+routes.put('/:id', (req, res) => {
+    res.send("Full update for user with id = " + req.params.id);
+});
+
+routes.patch('/:id', (req, res) => {
+    res.send("Partial update for user with id = " + req.params.id);
+});
+
+routes.delete('/:id', (req, res) => {
+    res.send("Delete user with id = " + req.params.id);
 });
 
 module.exports = routes;
