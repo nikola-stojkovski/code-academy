@@ -55,29 +55,70 @@ getSpecificUser = async(req, res, next) => {
     }
 };
 
-createUser = (req, res, next) => {
-    let isValid = emailValidator(req.body.email);
+
+createUserQuery = (user) => {
+    const query = 'INSERT INTO user(Name, Surname, Email, Age, IsActive) VALUES (?, ?, ?, ?, ?);';
+    return new Promise((resolve, reject) => {
+        con.query(query, [user.Name, user.Surname, user.Email, user.Age, user.IsActive], (error, results, fields) => {
+            if (error) {
+                reject(error);
+            } else {
+                //console.log(results)
+                resolve(results);
+            }
+          });
+    });
+};
+
+createUser = async(req, res, next) => {
+    let isValid = emailValidator(req.body.Email);
     if (!isValid) {
         var error = new Error("Email is not valid!");
         error.status = 401;
         next(error);
     }
     else {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-    let users = JSON.parse(rawdata);
+        try {
+            const userRequest = req.body;
+            const user = await createUserQuery(userRequest);
+            res.status(201).send("User has been created!");
+        } catch (error) {
+            res.status(500).send(error.message)
+        }
+    }
+};
 
+updateUserQuery = (id, user) => {
+    const query = 'UPDATE user SET Name = ?, Surname = ?, Email = ?, Age = ?, IsActive = ? WHERE id = ?';
+    return new Promise((resolve, reject) => {
+        con.query(query, [user.Name, user.Surname, user.Email, user.Age, user.IsActive, id], (error, results, fields) => {
+            if (error) {
+                reject(error);
+            } else {
+                console.log(results)
+                if(results.affectedRows == 0) {
+                    reject("Nema user so takvo id")
+                }
+                resolve(results);
+            }
+          });
+    });
+};
 
-    users.push(req.body);
-
-    let data = JSON.stringify(users);
-    fs.writeFileSync(path.join(__dirname, 'users.json'), data);
-
-    res.status(201).send("User has been created!");
+updateUser = async(req, res) => {
+    const userRequest = req.body;
+    const userId = req.params.id
+    try {
+        const user = await updateUserQuery(userId, userRequest);
+        res.status(201).send("User has been updated!");
+    } catch (error) {
+        res.status(500).send(error)
     }
 };
 
 module.exports = {
     getAllUsers,
     getSpecificUser,
-    createUser
+    createUser,
+    updateUser
 }
