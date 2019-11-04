@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 // app.use('/users', users);
 // app.use('/users/:id/posts', posts);
 
-app.use(appRouter);
+app.use('/api', appRouter);
 
 app.use(middleware.wrongRoute);
 app.use(middleware.errorHandler);

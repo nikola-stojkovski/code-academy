@@ -1,4 +1,5 @@
 const con = require('../database');
+const { User, Post } = require('../models');
 
 getAllPostsQuery = () => {
     const query = 'SELECT * FROM post';
@@ -77,8 +78,39 @@ createPost = async(req, res) => {
     }
 };
 
+getPostsForUserQuery = (userId) => {
+    console.log(userId)
+    const query = 'SELECT u.Name, u.Surname, u.Email, u.Age, p.Text, p.Likes, p.CreatedOn FROM user as u JOIN post as p ON u.Id = p.UserId WHERE u.Id = ?';
+    return new Promise((resolve, reject) => {
+        con.query(query, [userId], (error, results, fields) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results)
+            }
+          });
+    });
+};
+
+getPostsForUser = async(req, res) => {
+    const userId = req.params.userId;
+    try {
+        const result = await getPostsForUserQuery(userId);
+        const dbUser = result[0];
+        let user = new User(dbUser.Name, dbUser.Surname, dbUser.Email, dbUser.Age, dbUser.IsActive, []);
+        let posts = result.map(x => {
+            return new Post(x.Text, x.Likes, x.CreatedOn);
+        });
+        user.posts = posts;
+        res.status(201).send(user);  
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
 module.exports = {
     getAllPosts,
     getSpecificPost,
-    createPost
+    createPost,
+    getPostsForUser
 }
