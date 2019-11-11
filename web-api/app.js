@@ -5,16 +5,22 @@ var bodyParser = require('body-parser');
 const appRouter = require('./router');
 const middleware = require('./middlewares/common')
 require('dotenv/config');
+var jwt = require('express-jwt');
+var unless = require('express-unless');
+
 
 const app = express();
 
 app.use(middleware.logger);
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ type: '*/*' }));
 
 // app.use('/users', users);
 // app.use('/users/:id/posts', posts);
+
+// const publicRoutePaths = ['/api/login'];
+// app.use(jwt({ secret: 'aapaa' }).unless({path: publicRoutePaths}));
 
 app.use('/api', appRouter);
 

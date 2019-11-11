@@ -1,6 +1,7 @@
 const { emailValidator } = require('../helper');
 const con = require('../database');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 getAllUsersQuery = () => {
     const query = "SELECT * FROM user";
@@ -141,7 +142,8 @@ loginUser = async(req, res) => {
         var dbUser = user[0];
         const matchPass = bcrypt.compareSync(pass, dbUser.Password);
         if (matchPass) {
-            res.status(200).send("Password match");        }
+            const token = jwt.sign({dbUser}, 'aaaa', { expiresIn: '1h'});
+            res.status(200).json(token);        }
         else {
             res.status(401).send("Wrong password");
         }
